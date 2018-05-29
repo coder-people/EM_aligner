@@ -307,29 +307,29 @@ d = reshape(T', ncoeff,1);clear T;
 % build constraints into system
 lambda = ones(ncoeff,1) * opts.lambda;
 %%% adjust the rigidity of translation dof
-lambda(1:12:end) = opts.transfac* opts.lambda;  % for x
-lambda(7:12:end) = opts.transfac* opts.lambda;  % for y
+lambda(1:12:end) = opts.transfac;  % for x
+lambda(7:12:end) = opts.transfac;  % for y
 %%% adjust regidity of low-order parameters along x
 if isfield(opts, 'xlambdafac')
-lambda(2:12:end) = opts.xlambdafac* opts.lambda;
-lambda(3:12:end) = opts.xlambdafac* opts.lambda;
+lambda(2:12:end) = opts.xlambdafac;
+lambda(3:12:end) = opts.xlambdafac;
 end
 %%% adjust regidity of low-order parameters along y
 if isfield(opts, 'ylambdafac')
-lambda(8:12:end) = opts.ylambdafac* opts.lambda;
-lambda(9:12:end) = opts.ylambdafa* opts.lambdac;
+lambda(8:12:end) = opts.ylambdafac;
+lambda(9:12:end) = opts.ylambdafac;
 end
 %%% adjust regidity of higher-order parameters along x
 if isfield(opts, 'xfac')
-lambda(4:12:end) = opts.xfac* opts.lambda;
-lambda(5:12:end) = opts.xfac* opts.lambda;
-lambda(6:12:end) = opts.xfac* opts.lambda;
+lambda(4:12:end) = opts.xfac;
+lambda(5:12:end) = opts.xfac;
+lambda(6:12:end) = opts.xfac;
 end
 %%% adjust rigidity of higher-order parameters along y
 if isfield(opts, 'yfac')
-lambda(10:12:end) = opts.yfac* opts.lambda;
-lambda(11:12:end) = opts.yfac* opts.lambda;
-lambda(12:12:end) = opts.yfac* opts.lambda;
+lambda(10:12:end) = opts.yfac;
+lambda(11:12:end) = opts.yfac;
+lambda(12:12:end) = opts.yfac;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
