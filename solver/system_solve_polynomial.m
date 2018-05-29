@@ -343,7 +343,6 @@ y_coord = d(7:12:end);
 d(1:12:end) = d(1:12:end)-min(x_coord);
 d(7:12:end) = d(7:12:end)-min(y_coord);
 
-
 K  = A'*Wmx*A + lambda*(tB')*tB;
 Lm  = A'*Wmx*b + lambda*(tB')*d;
 [x2, R, Diagnostics.timer_solve_A] = solve_AxB(K,Lm, opts, d);
@@ -379,8 +378,7 @@ if opts.use_peg  % delete fictitious tile
 end
 % cleanup
 clear x2;
-clear K Lm d tb A b Wmx tB
-clear M adj W
+clear K Lm d tb A b tB;
 disp('.... done!');
 %% ingest into Renderer
 system_solve_helper_ingest_into_renderer_database(rc, rcout, ...
