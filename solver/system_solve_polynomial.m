@@ -197,8 +197,6 @@ adj = PM.adj;
 W = PM.W;
 np = PM.np;
 
-clear PM.w PM.M PM.adj PM.np;
-
 % cd(dir_scratch)
 % save PM M adj W -v7.3;
 % fn = [dir_scratch '/PM.mat'];
@@ -306,32 +304,32 @@ clear w;
 tB = 1;
 d = reshape(T', ncoeff,1);clear T;
 
-%%%%%%%%%%%%%%%%%%%%%%% generate tB (parameter weights)
+% build constraints into system
 lambda = ones(ncoeff,1) * opts.lambda;
 %%% adjust the rigidity of translation dof
-lambda(1:12:end) = opts.transfac;  % for x
-lambda(7:12:end) = opts.transfac;  % for y
+lambda(1:12:end) = opts.transfac* opts.lambda;  % for x
+lambda(7:12:end) = opts.transfac* opts.lambda;  % for y
 %%% adjust regidity of low-order parameters along x
 if isfield(opts, 'xlambdafac')
-lambda(2:12:end) = opts.xlambdafac;
-lambda(3:12:end) = opts.xlambdafac;
+lambda(2:12:end) = opts.xlambdafac* opts.lambda;
+lambda(3:12:end) = opts.xlambdafac* opts.lambda;
 end
 %%% adjust regidity of low-order parameters along y
 if isfield(opts, 'ylambdafac')
-lambda(8:12:end) = opts.ylambdafac;
-lambda(9:12:end) = opts.ylambdafac;
+lambda(8:12:end) = opts.ylambdafac* opts.lambda;
+lambda(9:12:end) = opts.ylambdafa* opts.lambdac;
 end
 %%% adjust regidity of higher-order parameters along x
 if isfield(opts, 'xfac')
-lambda(4:12:end) = opts.xfac;
-lambda(5:12:end) = opts.xfac;
-lambda(6:12:end) = opts.xfac;
+lambda(4:12:end) = opts.xfac* opts.lambda;
+lambda(5:12:end) = opts.xfac* opts.lambda;
+lambda(6:12:end) = opts.xfac* opts.lambda;
 end
 %%% adjust rigidity of higher-order parameters along y
 if isfield(opts, 'yfac')
-lambda(10:12:end) = opts.yfac;
-lambda(11:12:end) = opts.yfac;
-lambda(12:12:end) = opts.yfac;
+lambda(10:12:end) = opts.yfac* opts.lambda;
+lambda(11:12:end) = opts.yfac* opts.lambda;
+lambda(12:12:end) = opts.yfac* opts.lambda;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -342,18 +340,11 @@ x_coord = d(1:12:end);
 y_coord = d(7:12:end);
 d(1:12:end) = d(1:12:end)-min(x_coord);
 d(7:12:end) = d(7:12:end)-min(y_coord);
-AW = A'*Wmx;
-clear Wmx;
-K = AW*A;
-Lm = AW*b;
-size(lambda)
-clear AW A b;
-K = K+lambda;
-lambda = lambda*d;
 
-
-Lm = Lm+lambda;
-clear lambda;
+lambda = sparse(1:ncoeff, 1:ncoeff, lambda, ncoeff, ncoeff);
+% construct final matrix
+K  = A'*Wmx*A + lambda;
+Lm  = A'*Wmx*b + lambda*d;
 
 [x2, R, Diagnostics.timer_solve_A] = solve_AxB(K,Lm, opts, d);
 %%%% sosi
