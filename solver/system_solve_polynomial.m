@@ -342,31 +342,27 @@ x_coord = d(1:12:end);
 y_coord = d(7:12:end);
 d(1:12:end) = d(1:12:end)-min(x_coord);
 d(7:12:end) = d(7:12:end)-min(y_coord);
+AW = A'Wmx;
+ltB = lambda*(tB');
+clear Wmx;
+K = AW*A;
+Lm = AW*b;
 
-K  = A'*Wmx*A + lambda*(tB')*tB;
-Lm  = A'*Wmx*b + lambda*(tB')*d;
+clear AW A b;
+K2 = ltB*tB;
+Lm2 = ltB*d;
+
+clear ltB;
+clear tB d;
+
+K = K+K2;
+Lm = Lm+Lm2;
+
 [x2, R, Diagnostics.timer_solve_A] = solve_AxB(K,Lm, opts, d);
 %%%% sosi
 %disp(full([d(:) Lm(:) diag(tB) x2(:) R(:)]));
 %%%%%
 
-
-%     Diagnostics.timer_solve_A = toc(timer_solve_A);
-Diagnostics.nnz_A = nnz(A);
-Diagnostics.nnz_K = nnz(K);
-%%%% sosi
-%disp(full([d(:) Lm(:) diag(tB) x2(:) R(:)]));
-%%%%%
-precision = norm(K*x2-Lm)/norm(Lm);
-disp(['Precision: ' num2str(precision)]);
-err = norm(A*x2-b);
-disp(['Error norm(Ax-b): ' num2str(err)]);
-Error = err;
-Diagnostics.precision = precision;
-Diagnostics.err = err;
-Diagnostics.dim_A = size(A);
-Diagnostics.res =  A*x2-b;
-[Diagnostics.tile_err, Diagnostics.rms, Diagnostics.delix] = system_solve_helper_tile_based_point_pair_errors(PM, Diagnostics.res, ntiles);
 
 Tout = reshape(x2, tdim, ncoeff/tdim)';% remember, the transformations
 
@@ -378,7 +374,7 @@ if opts.use_peg  % delete fictitious tile
 end
 % cleanup
 clear x2;
-clear K Lm d tb A b tB;
+clear K Lm d;
 disp('.... done!');
 %% ingest into Renderer
 system_solve_helper_ingest_into_renderer_database(rc, rcout, ...
