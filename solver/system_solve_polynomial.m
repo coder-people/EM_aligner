@@ -343,14 +343,13 @@ y_coord = d(7:12:end);
 d(1:12:end) = d(1:12:end)-min(x_coord);
 d(7:12:end) = d(7:12:end)-min(y_coord);
 AW = A'*Wmx;
-ltB = lambda*(tB');
 clear Wmx;
 K = AW*A;
 Lm = AW*b;
 
 clear AW A b;
-K2 = ltB*tB;
-Lm2 = ltB*d;
+K2 = lambda*tB;
+Lm2 = lambda*d';
 
 clear ltB;
 clear tB d;
