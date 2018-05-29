@@ -344,18 +344,15 @@ d(1:12:end) = d(1:12:end)-min(x_coord);
 d(7:12:end) = d(7:12:end)-min(y_coord);
 AW = A'*Wmx;
 clear Wmx;
-K = AW*A;
+K = AW*A + lambda;
 Lm = AW*b;
 
 clear AW A b;
-K2 = lambda*tB;
-Lm2 = lambda*d';
+lambda = lambda*d;
 
-clear ltB;
-clear tB d;
 
-K = K+K2;
-Lm = Lm+Lm2;
+Lm = Lm+lambda;
+clear lambda;
 
 [x2, R, Diagnostics.timer_solve_A] = solve_AxB(K,Lm, opts, d);
 %%%% sosi
