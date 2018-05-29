@@ -197,7 +197,7 @@ adj = PM.adj;
 W = PM.W;
 np = PM.np;
 
-
+clear PM.w PM.M PM.adj PM.np;
 
 % cd(dir_scratch)
 % save PM M adj W -v7.3;
@@ -344,10 +344,11 @@ d(1:12:end) = d(1:12:end)-min(x_coord);
 d(7:12:end) = d(7:12:end)-min(y_coord);
 AW = A'*Wmx;
 clear Wmx;
-K = AW*A + lambda;
+K = AW*A;
 Lm = AW*b;
 
 clear AW A b;
+K = K+lambda;
 lambda = lambda*d;
 
 
