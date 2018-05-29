@@ -346,7 +346,7 @@ AW = A'*Wmx;
 clear Wmx;
 K = AW*A;
 Lm = AW*b;
-
+size(lambda)
 clear AW A b;
 K = K+lambda;
 lambda = lambda*d;
