@@ -342,7 +342,7 @@ x_coord = d(1:12:end);
 y_coord = d(7:12:end);
 d(1:12:end) = d(1:12:end)-min(x_coord);
 d(7:12:end) = d(7:12:end)-min(y_coord);
-AW = A'Wmx;
+AW = A'*Wmx;
 ltB = lambda*(tB');
 clear Wmx;
 K = AW*A;
