@@ -94,7 +94,7 @@ if ~isfield(opts, 'transfac'), opts.transfac = 1;end
 if ~isfield(opts, 'filter_point_matches'), opts.filter_point_matches = 0;end
 if ~isfield(opts, 'use_peg'), opts.use_peg = 0;end
 if ~isfield(opts, 'xfac'), opts.xfac = 1;end;
-if ~isfield(opts, 'xfac'), opts.yfac = 1;end;
+if ~isfield(opts, 'yfac'), opts.yfac = 1;end;
 
 
 err = [];
@@ -201,7 +201,7 @@ np = PM.np;
 % save PM M adj W -v7.3;
 % fn = [dir_scratch '/PM.mat'];
 % PM = matfile(fn);
-
+T(1,1:6)
 disp(' ..... done!');diary off;diary on;
 %% Step 3: generate row slabs of matrix A
 %%%%% Experimental: set x and y positions to zero when transfac <1.0
@@ -217,7 +217,7 @@ if opts.degree>1
     T = poly_expand_affines(T, opts.degree);
 end
 %%%%%%%%%%%%%%%%%%
-
+T(1,1:12)
 disp('** STEP 3:    Generating system matrix .... ');
 split = opts.distribute_A;
 
@@ -306,26 +306,28 @@ d = reshape(T', ncoeff,1);clear T;
 
 % build constraints into system
 lambda = ones(ncoeff,1) * opts.lambda;
-%%% adjust the rigidity of translation dof
+
+
+%% adjust the rigidity of translation dof
 lambda(1:12:end) = opts.transfac;  % for x
 lambda(7:12:end) = opts.transfac;  % for y
-%%% adjust regidity of low-order parameters along x
+%% adjust regidity of low-order parameters along x
 if isfield(opts, 'xlambdafac')
 lambda(2:12:end) = opts.xlambdafac;
 lambda(3:12:end) = opts.xlambdafac;
 end
-%%% adjust regidity of low-order parameters along y
+%% adjust regidity of low-order parameters along y
 if isfield(opts, 'ylambdafac')
 lambda(8:12:end) = opts.ylambdafac;
 lambda(9:12:end) = opts.ylambdafac;
 end
-%%% adjust regidity of higher-order parameters along x
+%% adjust regidity of higher-order parameters along x
 if isfield(opts, 'xfac')
 lambda(4:12:end) = opts.xfac;
 lambda(5:12:end) = opts.xfac;
 lambda(6:12:end) = opts.xfac;
 end
-%%% adjust rigidity of higher-order parameters along y
+%% adjust rigidity of higher-order parameters along y
 if isfield(opts, 'yfac')
 lambda(10:12:end) = opts.yfac;
 lambda(11:12:end) = opts.yfac;
@@ -335,7 +337,8 @@ end
 
 
 
-%%% for second order polynomial translate smallest x and smallest y in d to zero
+%%% for second order polynomial translate smallest x and smallest y in
+%%% d to zero
 x_coord = d(1:12:end);
 y_coord = d(7:12:end);
 d(1:12:end) = d(1:12:end)-min(x_coord);
@@ -351,6 +354,22 @@ Lm  = A'*Wmx*b + lambda*d;
 %disp(full([d(:) Lm(:) diag(tB) x2(:) R(:)]));
 %%%%%
 
+%     Diagnostics.timer_solve_A = toc(timer_solve_A);
+Diagnostics.nnz_A = nnz(A);
+Diagnostics.nnz_K = nnz(K);
+%%%% sosi
+%disp(full([d(:) Lm(:) diag(tB) x2(:) R(:)]));
+%%%%%
+precision = norm(K*x2-Lm)/norm(Lm);
+disp(['Precision: ' num2str(precision)]);
+err = norm(A*x2-b);
+disp(['Error norm(Ax-b): ' num2str(err)]);
+Error = err;
+Diagnostics.precision = precision;
+Diagnostics.err = err;
+Diagnostics.dim_A = size(A);
+Diagnostics.res =  A*x2-b;
+[Diagnostics.tile_err, Diagnostics.rms, Diagnostics.delix] = system_solve_helper_tile_based_point_pair_errors(PM, Diagnostics.res, ntiles);
 
 Tout = reshape(x2, tdim, ncoeff/tdim)';% remember, the transformations
 
@@ -362,8 +381,46 @@ if opts.use_peg  % delete fictitious tile
 end
 % cleanup
 clear x2;
-clear K Lm d;
+clear K Lm d tb A b Wmx tB
 disp('.... done!');
 %% ingest into Renderer
-system_solve_helper_ingest_into_renderer_database(rc, rcout, ...
-    Tout, tIds, z_val, opts, zu);
+
+%% Step 5: ingest into Renderer database
+if ~isempty(rcout)
+    disp('** STEP 5:   Ingesting data .....');
+    disp(' ..... translate to +ve space');
+    delta = 0;
+    if opts.degree==2
+        dx = min(Tout(:,1)) + sign(Tout(1))* delta;%mL.box(1);
+        dy = min(Tout(:,7)) + sign(Tout(1))* delta;%mL.box(2);
+        for ix = 1:size(Tout,1)
+            Tout(ix,[1 7]) = Tout(ix, [1 7]) - [dx dy];
+        end
+        v = 'v3';
+    end
+    disp('... export to MET (in preparation to be ingested into the Renderer database)...');
+    
+    if ~stack_exists(rcout)
+        disp('.... target collection not found, creating new collection in state: ''Loading''');
+        resp = create_renderer_stack(rcout);
+    end
+    
+    if ntiles<opts.nchunks_ingest, opts.nchunks_ingest = ntiles;end
+    
+    chks = round(ntiles/opts.nchunks_ingest);
+    cs = 1:chks:ntiles;
+    cs(end) = ntiles;
+    disp(' .... ingesting ....');
+    parfor ix = 1:numel(cs)-1
+        vec = cs(ix):cs(ix+1);
+        export_to_renderer_database(rcout, rc, dir_scratch, Tout(vec,:),...
+            tIds(vec), z_val(vec), v, opts.disableValidation);
+    end
+    
+    
+    % % complete stack
+    disp(' .... completing stack...');
+    resp = set_renderer_stack_state_complete(rcout);
+end
+disp('Ingested:');
+disp(rcout);
