@@ -161,7 +161,7 @@ end
 % load all tiles in this range and pool into Msection object
 disp('Loading transformations and tile/canvas ids from Renderer database.....');
 [T, map_id, tIds, z_val] = load_all_transformations(rc, zu, dir_scratch);
-T(1,1:6)
+
 ntiles = size(T,1);
 Diagnostics.ntiles = ntiles;
 disp(['..system has ' num2str(ntiles) ' tiles...']);
@@ -355,6 +355,7 @@ disp('-----------------------');
 
 % build system
 A = sparse(I1,J1,S1, n,ntiles*tdim); clear I1 J1 S1;
+
 Diagnostics.timer_generate_A = toc(timer_generate_A);
 b = sparse(size(A,1), 1);
 w = cell2mat(w(:));
