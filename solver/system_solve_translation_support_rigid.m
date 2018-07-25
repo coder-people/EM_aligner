@@ -1,7 +1,7 @@
 function [err,R, Tout, Diagnostics] = system_solve_translation_support_rigid(...
     nfirst, nlast, rc, pm, opts, rcout, T,map_id, tIds, z_val, PM)
 % support function that performs translation only on a rigid rotation
-% It applies the rotation transformation to point matches prio to translation
+% It applies the rotation transformation to point matches prior to translation
 % estimation, then ingests a new collection (a rigid approximation)
 % Author: Khaled Khairy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -176,18 +176,39 @@ np = PM.np;
 %  transform point matches according to similarity
 % in order to translate in a consistent way
 
+% %% %% debug : Look at point sets before and after transformation
+% figure(1);clf;plot(M{1,1}, 'r.');hold on;plot(M{1,2}, 'k.'); title('before affine');
+% Mt = M;
+% for pix = 1:size(Mt,1) % loop over point matches
+%     %%%%%transform points for the first of the two tiles
+%     pm = M{pix,1};
+%     t = reshape(T(adj(pix,1),[1 2 4 5]), 2, 2);
+%     pmt = pm*inv(t(1:2,1:2));
+%     Mt{pix,1}(:) = pmt;
+%     %%%%%%%%%%%transform points for the second of the two tiles
+%     pm = M{pix,2};
+%     t = reshape(T(adj(pix,2),[1 2 4 5]), 2, 2);
+%     pmt = pm*inv(t(1:2,1:2));
+%     Mt{pix,2} = pmt;
+%     %plot(M{pix,1}, '*b');
+% end
+% figure(2);plot(Mt{1,1}, 'r.');hold on;plot(Mt{1,2}, 'k.');title('after affine');
+
+%%
+
 for pix = 1:size(M,1) % loop over point matches
     %%%%%transform points for the first of the two tiles
     pm = M{pix,1};
     t = reshape(T(adj(pix,1),[1 2 4 5]), 2, 2);
-    pmt = pm*t(1:2,1:2);
+    pmt = pm*(t(1:2,1:2));
     M{pix,1}(:) = pmt;
     %%%%%%%%%%%transform points for the second of the two tiles
     pm = M{pix,2};
     t = reshape(T(adj(pix,2),[1 2 4 5]), 2, 2);
-    pmt = pm*t(1:2,1:2);
+    pmt = pm*(t(1:2,1:2));
     M{pix,2} = pmt;
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -304,11 +325,13 @@ Diagnostics.res =  [0 ; 0; A*x2-b];
 [Diagnostics.tile_err, Diagnostics.rms] = system_solve_helper_tile_based_point_pair_errors(PM, Diagnostics.res, ntiles);
 
 %%% include the eliminated tile
-x2 = [T(1,[3]); T(1,[6]); x2];
+%x2 = [T(1,[3]); T(1,[6]); x2];
+x2 = [0;0;x2];
 Translation_parms = reshape(x2, tdim, ncoeff/tdim)';% remember the transformations
 Tout = T;
-Tout(:,3) = Translation_parms(:,1);
-Tout(:,6) = Translation_parms(:,2);
+Tout(:,3) = Translation_parms(:,1) + T(1,[3]);
+Tout(:,6) = Translation_parms(:,2) + T(1,[6]);
+
 %     %%% rotate Tout
 %     deg = 180;
 %     x = 0;
@@ -339,23 +362,24 @@ if ~isempty(rcout)
         rcout.diagnostics = mean(Diagnostics.rms);
     end
     disp('** STEP 5:   Ingesting data .....');
-    disp(' ..... translate to +ve space');
+    %disp(' ..... translate to +ve space');
     %             delta = 0;
     % determine W and H:
-    webopts = weboptions('Timeout', 60);
-    urlChar = sprintf('%s/owner/%s/project/%s/stack/%s/z/%.1f/tile-specs', ...
-        rc.baseURL, rc.owner, rc.project, rc.stack,zu(1));
-    j = webread(urlChar, webopts);
-    %jt1 = tile(j(1));
-    Width = j(1).width;
-    Height = j(1).height;
-    
-    delta = -(5000 + max([Width Height]));
-    dx = min(Tout(:,3)) +  delta;
-    dy = min(Tout(:,6)) +  delta;
-    for ix = 1:size(Tout,1)
-        Tout(ix,[3 6]) = Tout(ix, [3 6]) - [dx dy];
-    end
+%     webopts = weboptions('Timeout', 60);
+%     urlChar = sprintf('%s/owner/%s/project/%s/stack/%s/z/%.1f/tile-specs', ...
+%         rc.baseURL, rc.owner, rc.project, rc.stack,zu(1));
+%     j = webread(urlChar, webopts);
+%     jt1 = tile(j(1));
+%     Width = jt1.W;
+%     Height = jt1.H;
+%     
+%     delta = 0;%-(5000 + max([Width Height]));
+%     dx = min(Tout(:,3)) +  delta;
+%     dy = min(Tout(:,6)) +  delta;
+%     for ix = 1:size(Tout,1)
+%         Tout(ix,[3 6]) = Tout(ix, [3 6]) - [dx dy];
+%     end
+
     
     disp('... export to MET (in preparation to be ingested into the Renderer database)...');
     
@@ -375,7 +399,7 @@ if ~isempty(rcout)
     cs = 1:chks:ntiles+1;
     cs(end) = ntiles;
     disp(' .... ingesting ....');
-    parfor ix = 1:numel(cs)-1
+    for ix = 1:numel(cs)-1
         vec = cs(ix):cs(ix+1);
         export_to_renderer_database(rcout, rc, dir_scratch, Tout(vec,:),...
             tIds(vec), z_val(vec), v, opts.disableValidation);

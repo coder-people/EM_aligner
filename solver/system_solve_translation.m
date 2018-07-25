@@ -1,4 +1,4 @@
-function [err,R, Tout, PM, Diagnostics] = system_solve_translation(nfirst, nlast, rc, pm, opts, rcout)
+function [err,R, Tout, PM, Diagnostics, map_id, tIds, z_val] = system_solve_translation(nfirst, nlast, rc, pm, opts, rcout)
 % Fast solve and ingest of section alignment when regularizer (starting collection)
 % rc and full set of point-matches pm is provided
 % After solving, ingests solved tiles into Renderer collection rcout if non empty
