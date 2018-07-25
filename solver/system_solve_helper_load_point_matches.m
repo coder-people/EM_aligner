@@ -144,7 +144,7 @@ else
   sID_all = sID_all(1:count-1,1:2);	
 end
 
-
+  
 
 if ~opts.outside_group && count ~= numel(zu)*(opts.nbrs+1) - opts.nbrs * (opts.nbrs)+1/2 +1
     sID_all = sID_all(1:count-1,1:2);
@@ -165,7 +165,7 @@ adj = {};
 W   = {};
 np = {};  % store a vector with number of points in point-matches (so
 	  % we don't need to loop again later)
-for ix = 1:count-1   % loop over sections
+parfor ix = 1:count-1   % loop over sections
     %disp([sID_all{ix,1}{1} ' ' sID_all{ix,2}{1} ' ' num2str(ismontage(ix))]);
     % when loading point matches, load all available point
     % then filter them, and after that select points randomly to limit the size of
@@ -211,6 +211,7 @@ for ix = 1:count-1   % loop over sections
         pmm = m(pmix,:);
         pmm1 = pmm{1};
 	pmm2 = pmm{2};
+        pmw = w{pmix};
 
         if size(pmm1,1)>opts.max_points  % do we have more than opts.max_points point-matches in the set pmix
             indx = randi(size(pmm1,1)-1, opts.max_points,1);  % define random indices
@@ -224,8 +225,6 @@ for ix = 1:count-1   % loop over sections
 	pmm1(:,2) = pmm1(:,2) - opts.offset_y;
 	pmm2(:,2) = pmm2(:,2) - opts.offset_y;
 	if opts.centre
-	  opts.Width
-	  opts.Height
 	  pmm1(:,1) = pmm1(:,1) - (opts.Width)/2;
 	  pmm2(:,1) = pmm2(:,1) - (opts.Width)/2;
 	  pmm1(:,2) = pmm1(:,2) - (opts.Height)/2;
