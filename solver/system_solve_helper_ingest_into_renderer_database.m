@@ -38,7 +38,12 @@ if ~isempty(rcout)
             Tout(ix,[3 6]) = Tout(ix, [3 6]) - [dx dy];
         end
     end
-    
+    if opts.centre
+      for ix = 1:size(Tout,1)
+	Tout(ix,3) = Tout(ix, 3)  - opts.Width/2*Tout(ix,1) -opts.Height/2*Tout(ix,2);
+	Tout(ix,6) = Tout(ix, 6) - opts.Width/2*Tout(ix,4) - opts.Height/2*Tout(ix,5);
+      end
+    end
     %disp('... export to MET (in preparation to be ingested into the Renderer database)...');
     v = 'v1';
     if ~stack_exists(rcout)
