@@ -12,6 +12,9 @@ end
 if ~isfield(opts, 'nchunks_ingest')
     opts.nchunks_ingest = 100;
 end
+if ~isfield(opts, 'center')
+    opts.center = 0;
+end
 if ~isempty(rcout)
     %disp('--------------- Ingesting data .....');
     
@@ -38,7 +41,7 @@ if ~isempty(rcout)
             Tout(ix,[3 6]) = Tout(ix, [3 6]) - [dx dy];
         end
     end
-    if opts.centre
+    if opts.center
       for ix = 1:size(Tout,1)
 	Tout(ix,3) = Tout(ix, 3)  - opts.Width/2*Tout(ix,1) -opts.Height/2*Tout(ix,2);
 	Tout(ix,6) = Tout(ix, 6) - opts.Width/2*Tout(ix,4) - opts.Height/2*Tout(ix,5);

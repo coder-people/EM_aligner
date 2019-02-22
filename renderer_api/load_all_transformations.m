@@ -45,7 +45,8 @@ if nargout >= 6
     c = C{10}(:);
 end
 
-parfor ix = 1:numel(tIds)
+%parfor ix = 1:numel(tIds)
+for ix = 1:numel(tIds)
     count_vec(ix)= {ix};
     id_vec(ix) = tIds(ix);%tIds{ix};
 end
