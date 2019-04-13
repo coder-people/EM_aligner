@@ -19,8 +19,8 @@ if Wbox(3)*scale>maxD || Wbox(4)*scale>maxD, error('box too large');end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 v = [];
-fn = [pwd '/tile_image_' generate_uuid '_' fn_id '.jpg'];
-url = sprintf('%s/owner/%s/project/%s/stack/%s/z/%s/box/%.0f,%.0f,%.0f,%.0f,%s/render-parameters?filter=true',...
+fn = [pwd '/tile_image_' generate_uuid '_' fn_id '.tif'];
+url = sprintf('%s/owner/%s/project/%s/stack/%s/z/%s/box/%.0f,%.0f,%.0f,%.0f,%s/render-parameters?filter=false',...
     rc.baseURL, rc.owner, rc.project, rc.stack, num2str(z), ...
     Wbox(1), ...
     Wbox(2), ...
@@ -42,15 +42,26 @@ while ~(file_ready) && count<2000
 end
 try
     pause(2.0);
-    im = imread(fn, 'jpeg');
+    im = imread(fn, 'tif');
     %if nargout>1, v = webread(url);end
+    im = rgb2gray(im);
+    im = flipdim(im' ,2);           % horizontal flip
+    im = imrotate(im,90);
+    delete(fn);
+    
 catch err_reading_image
     kk_disp_err(err_reading_image);
     disp('Retrying');
     pause(1.0);
-    im = imread(fn, 'jpeg');
+    try
+        im = imread(fn, 'tif');
+        im = rgb2gray(im);
+        im = flipdim(im' ,2);           % horizontal flip
+        im = imrotate(im,90);
+        delete(fn);
+        
+    catch
+        disp(['Failed to obtain image: ' fn]);
+        im = [];
+    end
 end
-im = rgb2gray(im);
-im = flipdim(im' ,2);           % horizontal flip
-im = imrotate(im,90);
-delete(fn);

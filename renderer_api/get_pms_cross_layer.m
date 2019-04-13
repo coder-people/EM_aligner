@@ -10,15 +10,15 @@ end
  urlChar = sprintf('%s/owner/%s/matchCollection/%s/group/%s/matchesWith/%s', ...
     pm(1).server, pm(1).owner, pm(1).match_collection, sID1, sID2);
  U = matlab.net.URI(urlChar);
-
+%data_options_str = ' ';
  if numel(pm)>1
-   data_options_str(numel(pm)) = '';
-   data_options_str(1) = '?';
+  %data_options_str(numel(pm)) = 'gg';
+   data_options_str{1} = '?';
    for ix = 2:numel(pm)
      if ix ==2
-       data_options_str(ix) = strcat('mergeCollection=',pm(ix).match_collection);
+       data_options_str{2} = strcat('mergeCollection=',pm(ix).match_collection);
      else
-       data_options_str(ix) = strcat('&mergeCollection=',pm(ix).match_collection);
+       data_options_str{ix} = strcat('&mergeCollection=',pm(ix).match_collection);
      end
    end
    

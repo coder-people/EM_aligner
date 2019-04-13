@@ -23,12 +23,12 @@ if ~isfield(rc, 'renderbinPath')
     rc.renderbinPath = '/groups/flyTEM/flyTEM/render/bin';
 end
 
-strcmd = sprintf('%s/manage-stack.sh --baseDataUrl %s --owner %s --project %s --action CREATE --stack %s --versionNotes "%s"',...
+strcmd = sprintf('%s/manage_stacks.sh --baseDataUrl %s --owner %s --project %s --action CREATE --stack %s --versionNotes "%s"',...
     rc.renderbinPath, rc.baseURL, rc.owner, rc.project, rc.stack, rc.versionNotes);
 if isfield(rc, 'diagnostics'), strcmd = [strcmd sprintf(' --alignmentQuality %f', rc.diagnostics)]; end
 strcmd = [strcmd ';'];
 
-if rc.verbose,
+if rc.verbose
     disp('In create_renderer_stack: command issued');
     disp(strcmd);
 end

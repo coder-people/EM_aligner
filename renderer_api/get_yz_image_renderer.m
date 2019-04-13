@@ -31,14 +31,16 @@ I = zeros(floor(dx * scale), floor(height * scale), numel(zrange));
 % end
 
 
-%parfor_progress(numel(zrange));
+parfor_progress(numel(zrange));
 parfor ix = 1:numel(zrange)
     %disp(ix);
    [im, v, url, resp_str] = get_image_box_renderer(rc, zrange(ix), Wbox, scale, 'kk');
-   I(:,:,ix) = im';
- %  parfor_progress;
+   if ~isempty(im)
+    I(:,:,ix) = im';
+   end
+   parfor_progress;
 end
-%parfor_progress(0);
+parfor_progress(0);
 
 
 

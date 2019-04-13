@@ -5,7 +5,7 @@ function I = materialize_volume_from_collection(rc, zstart, zfinish, scale, dir_
 % Author: Khaled Khairy / Using Renderer API by Eric T. and Stephan Saalfeld
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [Wbox, bbox, url] = get_slab_bounds_renderer(rc); %
-parfor ix = zstart:zfinish
+for ix = zstart:zfinish
     %disp(['materializing section: ' num2str(ix)]);
     try
         [im, v, url] = get_image_box_renderer(rc, ix, Wbox, scale, 'kk');
